@@ -10,33 +10,46 @@
 <div class="app">
     <aside class="sidebar">
         <div class="logo">M</div>
+        <div class="mini-calendar" id="mini-calendar"></div>
         <nav class="sidebar-nav">
-            <button class="nav-item active">Today</button>
-            <button class="nav-item">Tasks</button>
-            <button class="nav-item">Projects</button>
-            <button class="nav-item">Calendar</button>
+            <button class="nav-item active" id="nav-today">Today</button>
+            <button class="nav-item" id="nav-all">All Tasks</button>
         </nav>
+        <div class="sidebar-projects">
+            <div class="sidebar-projects-header">
+                <span>Projects</span>
+                <button class="add-project-inline" id="add-project-btn">+</button>
+            </div>
+            <div id="project-list"></div>
+        </div>
+        <div class="sidebar-categories">
+            <div class="sidebar-categories-header" id="categories-toggle">
+                <span>Categories</span>
+                <span id="categories-arrow">▾</span>
+            </div>
+            <div class="category-dropdown" id="category-list"></div>
+        </div>
     </aside>
 
     <main class="main-content">
         <header class="topbar">
             <div>
-                <p class="date">Monday, March 23</p>
-                <h1>Today</h1>
+                <p class="date" id="selected-date-label">Monday, March 23</p>
+                <h1 id="selected-date-title">Today</h1>
             </div>
-            <button class="add-task-btn">+ Add Task</button>
+            <div class="topbar-buttons">
+                <button class="add-task-btn">+ Add Task</button>
+            </div>
         </header>
 
         <section class="task-panel">
             <h2 class="section-title">All Tasks</h2>
             <div id="active-tasks"></div>
-
             <h2 class="section-title completed-title">Completed Tasks</h2>
             <div id="completed-tasks"></div>
         </section>
     </main>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>
