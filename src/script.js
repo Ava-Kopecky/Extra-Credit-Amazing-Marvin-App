@@ -11,13 +11,15 @@ function toDateString(date) {
 
 const activePanel = document.getElementById("active-tasks");
 const completedPanel = document.getElementById("completed-tasks");
+const overduePanel = document.getElementById("overdue-tasks");
+const overdueSection = document.getElementById("overdue-section");
 const addTaskButton = document.querySelector(".add-task-btn");
 const selectedDateLabel = document.getElementById("selected-date-label");
 const selectedDateTitle = document.getElementById("selected-date-title");
 
 const DURATION_OPTIONS = ["5m", "10m", "15m", "20m", "30m", "45m", "1h", "1h 30m", "2h"];
 const PRIORITY_OPTIONS = ["none", "low", "medium", "high"];
-const PROJECT_COLORS = ["#5b3cc4","#e05555","#e09a00","#2e8b2e","#0077cc","#cc5500","#888"];
+const PROJECT_COLORS = ["#8b3cc4","#e05555","#e09a00","#2e8b2e","#0077cc","#cc5500","#888"];
 
 const CATEGORIES = [
     { name: "Work", color: "#0077cc" },
@@ -362,10 +364,46 @@ async function loadTasks() {
     if (params.length) url += "?" + params.join("&");
 
     const res = await fetch(url);
-    const tasks = await res.json();
+    let tasks = await res.json();
+
     activePanel.innerHTML = "";
     completedPanel.innerHTML = "";
-    tasks.forEach(task => renderTask(task));
+    overduePanel.innerHTML = "";
+    overdueSection.style.display = "none";
+
+    const todayStr = toDateString(today);
+
+    // Show overdue section on today's view OR when viewing a category/project
+    const allRes = await fetch("http://localhost:8080/tasks");
+    const allTasks = await allRes.json();
+
+    let overdueTasks = allTasks.filter(t =>
+        t.dueDate &&
+        t.dueDate < todayStr &&
+        !t.completed &&
+        t.date !== todayStr
+    );
+
+    // If viewing a category, only show overdue tasks from that category
+    if (currentCategory) {
+        overdueTasks = overdueTasks.filter(t => t.label === currentCategory);
+    }
+
+    // If viewing a project, only show overdue tasks from that project
+    if (currentProjectId) {
+        overdueTasks = overdueTasks.filter(t => t.projectId === currentProjectId);
+    }
+
+    // Filter out tasks already in the main list to avoid duplicates
+    const mainTaskIds = new Set(tasks.map(t => t.id));
+    overdueTasks = overdueTasks.filter(t => !mainTaskIds.has(t.id));
+
+    if (overdueTasks.length > 0) {
+        overdueSection.style.display = "block";
+        overdueTasks.forEach(task => renderTask(task, true));
+    }
+
+    tasks.forEach(task => renderTask(task, false));
 }
 
 function showDurationModal(task, onConfirm) {
@@ -442,9 +480,66 @@ function showNotesPopup(notes) {
     overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
 }
 
-function renderTask(task) {
+function renderTask(task, isOverdue = false) {
     const wrapper = document.createElement("div");
     wrapper.className = "task-wrapper";
+    wrapper.draggable = true;
+    wrapper.dataset.taskId = task.id;
+    wrapper.dataset.sortOrder = task.sortOrder;
+
+    // Drag handle
+    const handle = document.createElement("div");
+    handle.className = "drag-handle";
+    handle.innerHTML = "⠿";
+    handle.title = "Drag to reorder";
+
+    // Drag events
+    wrapper.addEventListener("dragstart", (e) => {
+        wrapper.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", task.id);
+        e.dataTransfer.effectAllowed = "move";
+    });
+
+    wrapper.addEventListener("dragend", () => {
+        wrapper.classList.remove("dragging");
+        document.querySelectorAll(".drag-over").forEach(el => el.classList.remove("drag-over"));
+    });
+
+    wrapper.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        const dragging = document.querySelector(".dragging");
+        if (dragging && dragging !== wrapper) {
+            wrapper.classList.add("drag-over");
+        }
+    });
+
+    wrapper.addEventListener("dragleave", () => {
+        wrapper.classList.remove("drag-over");
+    });
+
+    wrapper.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        wrapper.classList.remove("drag-over");
+        const draggedId = parseInt(e.dataTransfer.getData("text/plain"));
+        if (draggedId === task.id) return;
+
+        const panel = isOverdue ? overduePanel : activePanel;
+        const draggedWrapper = panel.querySelector(`[data-task-id="${draggedId}"]`);
+        if (!draggedWrapper) return;
+
+        panel.insertBefore(draggedWrapper, wrapper);
+
+        const updatedWrappers = [...panel.querySelectorAll(".task-wrapper")];
+        await Promise.all(updatedWrappers.map((w, index) => {
+            const id = parseInt(w.dataset.taskId);
+            return fetch(`http://localhost:8080/tasks/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sortOrder: index })
+            });
+        }));
+    });
 
     const taskCard = document.createElement("div");
     taskCard.className = "task-card" + (task.completed ? " completed" : "");
@@ -663,11 +758,15 @@ function renderTask(task) {
     externalBadge.style.alignItems = "center";
     externalBadge.style.justifyContent = "center";
 
+    // Append handle FIRST, then taskCard, then externalBadge
+    wrapper.appendChild(handle);
     wrapper.appendChild(taskCard);
     wrapper.appendChild(externalBadge);
 
     if (task.completed) {
         completedPanel.appendChild(wrapper);
+    } else if (isOverdue) {
+        overduePanel.appendChild(wrapper);
     } else {
         activePanel.appendChild(wrapper);
     }
@@ -704,6 +803,41 @@ function renderCategories() {
 
     document.getElementById("category-list").style.display = categoriesOpen ? "flex" : "none";
 }
+
+document.getElementById("smart-sort-btn").addEventListener("click", async () => {
+    // Get only the tasks currently visible in the active panel
+    const visibleWrappers = [...activePanel.querySelectorAll(".task-wrapper")];
+    const visibleIds = visibleWrappers.map(w => parseInt(w.dataset.taskId));
+
+    // Fetch all tasks to get full data
+    const res = await fetch("http://localhost:8080/tasks");
+    const allTasks = await res.json();
+
+    // Only sort the visible tasks
+    const priorityOrder = { "high": 0, "medium": 1, "low": 2, "none": 3 };
+    const visibleTasks = allTasks
+        .filter(t => visibleIds.includes(t.id))
+        .sort((a, b) => {
+            const pa = priorityOrder[a.priority] ?? 3;
+            const pb = priorityOrder[b.priority] ?? 3;
+            if (pa !== pb) return pa - pb;
+            if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+            if (a.dueDate) return -1;
+            if (b.dueDate) return 1;
+            return 0;
+        });
+
+    // Save new sort order
+    await Promise.all(visibleTasks.map((task, index) =>
+        fetch(`http://localhost:8080/tasks/${task.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sortOrder: index })
+        })
+    ));
+
+    loadTasks();
+});
 
 document.getElementById("categories-toggle").addEventListener("click", () => {
     categoriesOpen = !categoriesOpen;

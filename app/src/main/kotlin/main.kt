@@ -190,27 +190,16 @@ fun main() {
                 val date = call.request.queryParameters["date"]
                 val projectId = call.request.queryParameters["projectId"]?.toIntOrNull()
                 val label = call.request.queryParameters["label"]
-
-                println("DEBUG: date=$date, projectId=$projectId, label=$label")
-
                 val tasks = transaction {
                     val allTasks = Tasks.selectAll().map { rowToTask(it) }
-                    println("DEBUG: total tasks=${allTasks.size}")
-                    allTasks.forEach { println("DEBUG: task=${it.text}, label=${it.label}") }
-
-                    if (label != null) {
-                        val filtered = allTasks.filter { it.label == label }
-                        println("DEBUG: filtered to ${filtered.size} tasks")
-                        filtered
-                    } else if (date != null && projectId != null) {
-                        allTasks.filter { it.date == date && it.projectId == projectId }
-                    } else if (date != null) {
-                        allTasks.filter { it.date == date }
-                    } else if (projectId != null) {
-                        allTasks.filter { it.projectId == projectId }
-                    } else {
-                        allTasks
+                    val filtered = when {
+                        label != null -> allTasks.filter { it.label == label }
+                        date != null && projectId != null -> allTasks.filter { it.date == date && it.projectId == projectId }
+                        date != null -> allTasks.filter { it.date == date }
+                        projectId != null -> allTasks.filter { it.projectId == projectId }
+                        else -> allTasks
                     }
+                    filtered.sortedBy { it.sortOrder }
                 }
                 call.respond(tasks)
             }

@@ -43,7 +43,14 @@
         </header>
 
         <section class="task-panel">
-            <h2 class="section-title">All Tasks</h2>
+            <div id="overdue-section" style="display:none;">
+                <h2 class="section-title overdue-title">⚠️ Overdue</h2>
+                <div id="overdue-tasks"></div>
+            </div>
+            <div class="section-header">
+                <h2 class="section-title">All Tasks</h2>
+                <button class="sort-btn" id="smart-sort-btn">✨ Smart Sort</button>
+            </div>
             <div id="active-tasks"></div>
             <h2 class="section-title completed-title">Completed Tasks</h2>
             <div id="completed-tasks"></div>

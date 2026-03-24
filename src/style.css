@@ -874,3 +874,77 @@ span[contenteditable="true"]:focus {
 .project-item:hover .project-delete-btn {
     opacity: 1;
 }
+
+.overdue-title {
+    color: #e05555;
+}
+
+#overdue-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.task-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.task-wrapper.dragging {
+    opacity: 0.4;
+}
+
+.task-wrapper.drag-over {
+    border-top: 2px solid #5b3cc4;
+}
+
+.drag-handle {
+    color: #c0b8d4;
+    cursor: grab;
+    font-size: 16px;
+    padding: 0 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.task-wrapper:hover .drag-handle {
+    opacity: 1;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.sort-btn {
+    background: none;
+    border: 1px solid #c0b8d4;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #7d7492;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+    background: #5b3cc4;
+    color: white;
+    border-color: #5b3cc4;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.section-header .section-title {
+    margin: 0;
+}
