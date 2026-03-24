@@ -417,6 +417,31 @@ function getPriorityClass(priority) {
     return null;
 }
 
+function showNotesPopup(notes) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+        <div class="modal" style="align-items:stretch;width:400px;">
+            <h3 style="text-align:center;">📝 Notes</h3>
+            <p style="
+                color: #2d2340;
+                font-size: 15px;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                background: #f4f1fb;
+                border-radius: 12px;
+                padding: 16px;
+            ">${notes}</p>
+            <div class="modal-actions">
+                <button class="modal-confirm">Close</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector(".modal-confirm").addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+}
+
 function renderTask(task) {
     const wrapper = document.createElement("div");
     wrapper.className = "task-wrapper";
@@ -527,6 +552,11 @@ function renderTask(task) {
         indicator.className = "notes-indicator";
         indicator.textContent = "📝";
         indicator.title = task.notes;
+        indicator.style.cursor = "pointer";
+        indicator.addEventListener("click", (e) => {
+            e.stopPropagation();
+            showNotesPopup(task.notes);
+        });
         meta.appendChild(indicator);
     }
 
