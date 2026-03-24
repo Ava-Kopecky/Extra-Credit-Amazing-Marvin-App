@@ -114,4 +114,240 @@ h1 {
     gap: 14px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     font-size: 16px;
+    position: relative; /* add this */
+}
+
+.delete-btn {
+    margin-left: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c0b8d4;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.task-card:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    color: #e05555;
+}
+
+.section-title {
+    font-size: 18px;
+    color: #7d7492;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.completed-title {
+    margin-top: 32px;
+}
+
+.task-card.completed {
+    opacity: 0.5;
+    background: #e9e6f0;
+}
+
+.task-card.completed span {
+    text-decoration: line-through;
+    color: #7d7492;
+    pointer-events: none;
+}
+
+.task-card.completed input[type="checkbox"] {
+    pointer-events: none;
+}
+
+#active-tasks, #completed-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+span[contenteditable="true"]:empty:before {
+    content: "Task name...";
+    color: #b0a8c8;
+    pointer-events: none;
+}
+
+span[contenteditable="true"]:focus {
+    caret-color: #5b3cc4;
+}
+
+.task-card.completed:hover {
+    background: #d9d5e8;
+    transition: background 0.2s ease;
+}
+
+.task-card:not(.completed):hover {
+    background: #f4f1fb;
+    transition: background 0.2s ease;
+}
+
+.timer-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #c0b8d4;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    padding: 4px 6px;
+    border-radius: 6px;
+    margin-left: auto;
+}
+
+.task-card:hover .timer-btn {
+    opacity: 1;
+}
+
+.timer-btn:hover {
+    color: #5b3cc4;
+}
+
+.duration-badge {
+    background: #ede9f8;
+    color: #5b3cc4;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    width: 340px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.modal h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d2340;
+}
+
+.modal-task-name {
+    font-size: 14px;
+    color: #7d7492;
+    margin-top: -12px;
+}
+
+.duration-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.duration-option {
+    background: #f4f1fb;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d2340;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.duration-option:hover {
+    background: #ede9f8;
+    color: #5b3cc4;
+}
+
+.duration-option.selected {
+    background: #5b3cc4;
+    color: white;
+}
+
+.custom-duration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.custom-duration input {
+    flex: 1;
+    border: 2px solid #e0d9f5;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+    color: #2d2340;
+}
+
+.custom-duration input:focus {
+    border-color: #5b3cc4;
+}
+
+.custom-duration span {
+    color: #7d7492;
+    font-size: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.modal-confirm {
+    flex: 1;
+    background: #5b3cc4;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal-confirm:hover {
+    opacity: 0.9;
+}
+
+.modal-cancel {
+    flex: 1;
+    background: #f4f1fb;
+    color: #7d7492;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.modal-cancel:hover {
+    background: #ede9f8;
 }
